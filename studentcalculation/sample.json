@@ -1,0 +1,22 @@
+[
+    {
+        "rollNo":1,
+        "name":"abc",
+        "testScore":12
+    },
+    {
+        "rollNo":2,
+        "name":"AAAA",
+        "testScore":98
+    },
+    {
+        "rollNo":3,
+        "name":"BBBBB",
+        "testScore":76
+    },
+    {
+        "rollNo":4,
+        "name":"cccc",
+        "testScore":64
+    }
+]

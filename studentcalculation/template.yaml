@@ -1,0 +1,58 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  studentcal
+
+  Sample SAM Template for studentcal
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 30
+    Tracing: Active
+    # You can add LoggingConfig parameters such as the Logformat, Log Group, and SystemLogLevel or ApplicationLogLevel. Learn more here https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-function.html#sam-function-loggingconfig.
+     
+Resources:
+  StudentCalculateTopic:
+    Type: AWS::SNS::Topic
+  StudentDispayBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub ${AWS::StackName}-${AWS::AccountId}-${AWS::Region}
+  StudentCalculateFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: students_api/
+      Handler: calculate.lambda_handler
+      Runtime: python3.13
+      Policies: 
+        - S3ReadPolicy:
+            BucketName: !Sub ${AWS::StackName}-${AWS::AccountId}-${AWS::Region}
+        - SNSPublishMessagePolicy:
+            TopicName: !GetAtt StudentCalculateTopic.TopicName
+      Environment:
+        Variables:
+          STUDENT_GRADE_TOPIC: !Ref StudentCalculateTopic
+      Architectures:
+      - x86_64
+      Events:
+        S3Event:
+          Type: S3
+          Properties:
+            Bucket: !Ref StudentDispayBucket
+            Events: s3:ObjectCreated:*
+  StudentDisplayGradeFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: students_api/
+      Handler: displaygrade.lambda_handler
+      Runtime: python3.13
+      Architectures:
+      - x86_64
+      Events:
+        SNSEvent:
+          Type: SNS
+          Properties: 
+            Topic: !Ref StudentCalculateTopic
+
+   
